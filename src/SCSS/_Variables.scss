@@ -60,4 +60,13 @@ $calendar-small-screen-width: 480px; // This can't be used for a media-query in 
 
     --calendar-active-month-button-bg-color: #238eff;
     --calendar-active-month-button-text-color: white;
+
+    --calendar-year-selection-button-bg-color: none;
+    --calendar-year-selection-button-text-color: rgb(55,55,55);
+    --calendar-year-selection-button-border-radius: 4px;
+    --calendar-year-selection-button-bg-color-hover: rgb(248,248,248);
+    --calendar-year-selection-button-text-color-hover: rgb(55,55,55);
+
+    --calendar-active-year-button-bg-color: #238eff;
+    --calendar-active-year-button-text-color: white;
 }

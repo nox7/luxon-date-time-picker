@@ -186,6 +186,35 @@
                 }
             }
 
+            .year-selection-container{
+                padding: var(--calendar-section-container-padding);
+                .year-buttons{
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+
+                    button{
+                        appearance: none;
+                        border: none;
+                        padding: 1rem;
+                        font-size: 1.05rem;
+                        background-color: var(--calendar-year-selection-button-bg-color);
+                        color: var(--calendar-year-selection-button-text-color);
+                        border-radius: var(--calendar-year-selection-button-border-radius);
+
+                        &:hover{
+                            cursor: pointer;
+                            background-color: var(--calendar-year-selection-button-bg-color-hover);
+                            color: var(--calendar-year-selection-button-text-color-hover);
+                        }
+
+                        &.selected{
+                            background-color: var(--calendar-active-year-button-bg-color);
+                            color: var(--calendar-active-year-button-text-color);
+                        }
+                    }
+                }
+            }
+
             .calendar-controls-buttons{
                 display: flex;
 

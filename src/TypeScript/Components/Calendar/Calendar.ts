@@ -4,6 +4,7 @@ import { BaseComponent } from "./../BaseComponent";
 import { DayButton } from "./DayButton";
 import { BeforeDateTimeConfirmedEvent } from "../../Events/BeforeDateTimeConfirmedEvent";
 import { MonthButton } from "./MonthButton";
+import { YearButton } from "./YearButton";
 
 export class Calendar extends BaseComponent{
     private DateTimePicker: DateTimePickerComponent;
@@ -15,6 +16,7 @@ export class Calendar extends BaseComponent{
     private CurrentDateTime: luxon.DateTime;
     private DayButtonComponents: DayButton[] = [];
     private MonthButtonComponents: MonthButton[] = [];
+    private YearButtonComponents: YearButton[] = [];
     private CalendarControlsButtons: HTMLDivElement;
     private CancelButton: HTMLButtonElement;
     private BackButton: HTMLButtonElement;
@@ -23,6 +25,7 @@ export class Calendar extends BaseComponent{
     private CalendarControlsContainer: HTMLDivElement;
     private MonthSelectorContainer: HTMLDivElement;
     private YearSelectorContainer: HTMLDivElement;
+    private CurrentYearSelectionRowShift: number = 0;
 
     public constructor(dateTimePicker: DateTimePickerComponent){
         super();
@@ -60,13 +63,15 @@ export class Calendar extends BaseComponent{
                     <div class="month-selection-container" style="display: none;">
                         <div class="month-buttons"></div>
                     </div>
-                    <div class="year-selection-container" style="display: none;"></div>
+                    <div class="year-selection-container" style="display: none;">
+                        <div class="year-buttons"></div>
+                    </div>
                     <div class="calendar-controls-buttons">
                         <button type="button" class="close-button">
                             <span>Cancel</span>
                         </button>
                         <button type="button" class="confirm-button">
-                        <span>Confirm</span>
+                            <span>Confirm</span>
                         </button>
                         <button type="button" class="back-button" style="display: none;">
                             <span>Cancel</span>
@@ -105,6 +110,14 @@ export class Calendar extends BaseComponent{
             this.OnSelectMonthButtonClicked();
         });
 
+        template.querySelector(".select-year-button").addEventListener("click", e => {
+            this.OnSelectYearButtonClicked();
+        });
+
+        template.querySelector(".year-selection-container").addEventListener("wheel", (e: WheelEvent) => {
+            this.OnSelectYearScroll(e.deltaY);
+        });
+
         // Render weekday titles from user-defined weekday indices order
         const weekdayIndices = this.DateTimePicker.GetWeekdayIndices();
         for (const weekdayNumber of weekdayIndices){
@@ -132,6 +145,29 @@ export class Calendar extends BaseComponent{
         this.ShowMonthPicker();
     }
 
+    private OnSelectYearButtonClicked(): void{
+        // Reset the shows to shift by
+        this.CurrentYearSelectionRowShift = 0;
+        this.RenderYearSelectionButtons();
+        this.ShowYearPicker();
+    }
+
+    /**
+     * When the user scrolls/drags while selecting a year
+     * @param deltaY 
+     */
+    private OnSelectYearScroll(deltaY: number): void{
+        if (deltaY < 0){
+            --this.CurrentYearSelectionRowShift;
+            this.ClearYearSelectionButtons();
+            this.RenderYearSelectionButtons();
+        }else if (deltaY > 0){
+            ++this.CurrentYearSelectionRowShift;
+            this.ClearYearSelectionButtons();
+            this.RenderYearSelectionButtons();
+        }
+    }
+
     private OnCancelButtonClicked(): void{
         this.DateTimePicker.HideAll();
     }
@@ -156,6 +192,16 @@ export class Calendar extends BaseComponent{
         this.CalendarControlsContainer.style.display = "none";
         this.YearSelectorContainer.style.display = "none";
         this.MonthSelectorContainer.style.display = null;
+    }
+
+    /**
+     * Shows the year picker section of the calendar. Hides other content sections.
+     */
+    private ShowYearPicker(): void{
+        this.CalendarControlsButtons.style.display = "none";
+        this.CalendarControlsContainer.style.display = "none";
+        this.YearSelectorContainer.style.display = null;
+        this.MonthSelectorContainer.style.display = "none";
     }
 
     /**
@@ -247,6 +293,14 @@ export class Calendar extends BaseComponent{
     }
 
     /**
+     * Removes all the year buttons in the year selection section, and clears the array of this instance.
+     */
+    private ClearYearSelectionButtons(): void{
+        this.YearButtonComponents.forEach(component => component.Remove());
+        this.YearButtonComponents = [];
+    }
+
+    /**
      * Renders the month's date buttons for the current month defined in the 
      * DateTimePicker property's current date time.
      */
@@ -283,6 +337,29 @@ export class Calendar extends BaseComponent{
                 });
 
             this.MonthButtonComponents.push(buttonComponent);
+        }
+    }
+
+    /**
+     * Renders the buttons for the year selection section. Renders years in 12 year intervals where the current year
+     * is always rendered as the 5th index (starting the second row out of 3 rows)
+     */
+    private RenderYearSelectionButtons(): void{
+        const currentDateTime = this.CurrentDateTime;
+        const yearsPerRow = 4;
+        const rowsToShiftBy = this.CurrentYearSelectionRowShift ?? 0;
+        const firstYearToRender = currentDateTime.year - yearsPerRow;
+        const lastYearToRender = currentDateTime.year + (yearsPerRow - 1) + yearsPerRow;
+        this.ClearYearSelectionButtons();
+        for (let i = firstYearToRender + (yearsPerRow * rowsToShiftBy); i <= lastYearToRender + (yearsPerRow * rowsToShiftBy); i++){
+            const buttonComponent = new YearButton(luxon.DateTime.now().set({day: 1, month: 1, year: i}), currentDateTime)
+                .Build()
+                .RenderInto(this.YearSelectorContainer.querySelector(".year-buttons"))
+                .OnClicked(() => {
+                    this.OnYearButtonClicked(buttonComponent);
+                });
+
+            this.YearButtonComponents.push(buttonComponent);
         }
     }
 
@@ -344,6 +421,25 @@ export class Calendar extends BaseComponent{
         }
 
         return dateTimesToRender;
+    }
+
+    /**
+     * Called when a year selection button is clicked. Sets the current date's year and then re-renders the calendar buttons
+     * based on the new date selected.
+     * @param component 
+     */
+    private OnYearButtonClicked(component: YearButton): this{
+        const dateTime = component.GetDateTime();
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            year: dateTime.year
+        });
+
+        this.ClearCurrentDayButtons();
+        this.RenderButtonsForCurrentMonth();
+        this.UpdateMonthButtonText();
+        this.UpdateYearButtonText();
+        this.ShowDatePicker();
+        return this;
     }
 
     /**
