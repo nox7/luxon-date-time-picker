@@ -3,6 +3,7 @@ import { DateTimePickerComponent } from "../../DateTimePickerComponent";
 import { BaseComponent } from "./../BaseComponent";
 import { DayButton } from "./DayButton";
 import { BeforeDateTimeConfirmedEvent } from "../../Events/BeforeDateTimeConfirmedEvent";
+import { MonthButton } from "./MonthButton";
 
 export class Calendar extends BaseComponent{
     private DateTimePicker: DateTimePickerComponent;
@@ -13,10 +14,15 @@ export class Calendar extends BaseComponent{
      */
     private CurrentDateTime: luxon.DateTime;
     private DayButtonComponents: DayButton[] = [];
+    private MonthButtonComponents: MonthButton[] = [];
+    private CalendarControlsButtons: HTMLDivElement;
     private CancelButton: HTMLButtonElement;
     private BackButton: HTMLButtonElement;
     private ConfirmButton: HTMLButtonElement;
     private NextButton: HTMLButtonElement;
+    private CalendarControlsContainer: HTMLDivElement;
+    private MonthSelectorContainer: HTMLDivElement;
+    private YearSelectorContainer: HTMLDivElement;
 
     public constructor(dateTimePicker: DateTimePickerComponent){
         super();
@@ -30,50 +36,58 @@ export class Calendar extends BaseComponent{
         template.classList.add("date-time-picker-calendar-component");
         template.innerHTML = `
             <div class="dialog">
-                <div class="calendar-controls-container">
-                    <div class="month-year-controls-container">
-                        <button type="button" class="prev-month-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
-                            </svg>
+                <div class="calendar-container">
+                    <div class="calendar-controls-container">
+                        <div class="month-year-controls-container">
+                            <button type="button" class="prev-month-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="select-month-button">${currentDateTime.toFormat("MMMM")}</button>
+                            <button type="button" class="select-year-button">${currentDateTime.toFormat("yyyy")}</button>
+                            <button type="button" class="next-month-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="weekday-grid-container">
+                            <div class="weekdays-titles"></div>
+                            <div class="weekday-buttons"></div>
+                        </div>
+                    </div>
+                    <div class="month-selection-container" style="display: none;">
+                        <div class="month-buttons"></div>
+                    </div>
+                    <div class="year-selection-container" style="display: none;"></div>
+                    <div class="calendar-controls-buttons">
+                        <button type="button" class="close-button">
+                            <span>Cancel</span>
                         </button>
-                        <button type="button" class="month-button">${currentDateTime.toFormat("MMMM")}</button>
-                        <button type="button" class="year-button">${currentDateTime.toFormat("yyyy")}</button>
-                        <button type="button" class="next-month-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
-                            </svg>
+                        <button type="button" class="confirm-button">
+                        <span>Confirm</span>
+                        </button>
+                        <button type="button" class="back-button" style="display: none;">
+                            <span>Cancel</span>
+                        </button>
+                        <button type="button" class="next-button" style="display: none;">
+                            <span>Next</span>
                         </button>
                     </div>
-                    <div class="weekday-grid-container">
-                        <div class="weekdays-titles"></div>
-                        <div class="weekday-buttons"></div>
-                    </div>
-                </div>
-                <div class="month-selection-container" style="display: none;"></div>
-                <div class="year-selection-container" style="display: none;"></div>
-                <div class="calendar-controls-buttons">
-                    <button type="button" class="close-button">
-                        <span>Cancel</span>
-                    </button>
-                    <button type="button" class="confirm-button">
-                    <span>Confirm</span>
-                    </button>
-                    <button type="button" class="back-button" style="display: none;">
-                        <span>Cancel</span>
-                    </button>
-                    <button type="button" class="next-button" style="display: none;">
-                        <span>Next</span>
-                    </button>
                 </div>
             </div>
         `;
 
         this.Dom = template;
+        this.CalendarControlsButtons = template.querySelector(".calendar-controls-buttons");
         this.CancelButton = template.querySelector(".close-button");
         this.ConfirmButton = template.querySelector(".confirm-button");
         this.BackButton = template.querySelector(".back-button");
         this.NextButton = template.querySelector(".next-button");
+        this.CalendarControlsContainer = template.querySelector(".calendar-controls-container");
+        this.MonthSelectorContainer = template.querySelector(".month-selection-container");
+        this.YearSelectorContainer = template.querySelector(".year-selection-container");
 
         template.addEventListener("click", e => {
             this.OnComponentClicked(e);
@@ -85,6 +99,10 @@ export class Calendar extends BaseComponent{
 
         template.querySelector(".next-month-button").addEventListener("click", e => {
             this.OnMonthChangeButtonClicked(1);
+        });
+
+        template.querySelector(".select-month-button").addEventListener("click", e => {
+            this.OnSelectMonthButtonClicked();
         });
 
         // Render weekday titles from user-defined weekday indices order
@@ -109,18 +127,45 @@ export class Calendar extends BaseComponent{
         return this;
     }
 
+    private OnSelectMonthButtonClicked(): void{
+        this.RenderMonthSelectionButtons();
+        this.ShowMonthPicker();
+    }
+
     private OnCancelButtonClicked(): void{
         this.DateTimePicker.HideAll();
     }
 
     private OnConfirmButtonClicked(): void{
         const beforeConfirmEvent: BeforeDateTimeConfirmedEvent = new BeforeDateTimeConfirmedEvent();
+        beforeConfirmEvent.DateTime = this.CurrentDateTime;
+
         this.DateTimePicker.FireBeforeDateTimeConfirmed(beforeConfirmEvent);
 
         if (!beforeConfirmEvent.Canceled){
             this.DateTimePicker.SetCurrentDate(this.CurrentDateTime.month, this.CurrentDateTime.day, this.CurrentDateTime.year);
             this.DateTimePicker.HideAll();
         }
+    }
+
+    /**
+     * Shows the month picker section of the calendar. Hides other content sections.
+     */
+    private ShowMonthPicker(): void{
+        this.CalendarControlsButtons.style.display = "none";
+        this.CalendarControlsContainer.style.display = "none";
+        this.YearSelectorContainer.style.display = "none";
+        this.MonthSelectorContainer.style.display = null;
+    }
+
+    /**
+     * Shows the normal date picker view of a calendar.
+     */
+    private ShowDatePicker(): void{
+        this.CalendarControlsButtons.style.display = null;
+        this.CalendarControlsContainer.style.display = null;
+        this.YearSelectorContainer.style.display = "none";
+        this.MonthSelectorContainer.style.display = "none";
     }
 
     /**
@@ -194,6 +239,14 @@ export class Calendar extends BaseComponent{
     }
 
     /**
+     * Removes all the month buttons in the month selection section, and clears the array of this instance.
+     */
+    private ClearMonthSelectionButtons(): void{
+        this.MonthButtonComponents.forEach(component => component.Remove());
+        this.MonthButtonComponents = [];
+    }
+
+    /**
      * Renders the month's date buttons for the current month defined in the 
      * DateTimePicker property's current date time.
      */
@@ -212,6 +265,24 @@ export class Calendar extends BaseComponent{
                 });
 
             this.DayButtonComponents.push(buttonComponent);
+        }
+    }
+
+    /**
+     * Renders the buttons for the month selection section.
+     */
+    private RenderMonthSelectionButtons(): void{
+        const currentDateTime = this.CurrentDateTime;
+        this.ClearMonthSelectionButtons();
+        for (let i = 1; i <= 12; i++){
+            const buttonComponent = new MonthButton(luxon.DateTime.now().set({day: 1, month: i}), currentDateTime)
+                .Build()
+                .RenderInto(this.MonthSelectorContainer.querySelector(".month-buttons"))
+                .OnClicked(() => {
+                    this.OnMonthButtonClicked(buttonComponent);
+                });
+
+            this.MonthButtonComponents.push(buttonComponent);
         }
     }
 
@@ -276,9 +347,27 @@ export class Calendar extends BaseComponent{
     }
 
     /**
+     * Called when a month selection button is clicked. Sets the current date's month and then re-renders the calendar buttons
+     * based on the new date selected.
+     * @param component 
+     */
+    private OnMonthButtonClicked(component: MonthButton): this{
+        const dateTime = component.GetDateTime();
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            month: dateTime.month
+        });
+
+        this.ClearCurrentDayButtons();
+        this.RenderButtonsForCurrentMonth();
+        this.UpdateMonthButtonText();
+        this.UpdateYearButtonText();
+        this.ShowDatePicker();
+        return this;
+    }
+
+    /**
      * Called when a day button in the calendar is clicked. Sets the current Date (month, day, year)
-     * and then re-renders the calendar buttons based on the new
-     * date selected.
+     * and then re-renders the calendar buttons based on the new date selected.
      * @param component 
      * @returns 
      */
@@ -314,6 +403,7 @@ export class Calendar extends BaseComponent{
         this.RenderButtonsForCurrentMonth();
         this.UpdateMonthButtonText();
         this.UpdateYearButtonText();
+        this.ShowDatePicker();
         return this;
     }
 
@@ -321,7 +411,7 @@ export class Calendar extends BaseComponent{
      * Updates the calendar's month button's current month text.
      */
     private UpdateMonthButtonText(): this{
-        const monthButton = this.Dom.querySelector(".month-button");
+        const monthButton = this.Dom.querySelector(".select-month-button");
         monthButton.textContent = this.CurrentDateTime.toFormat("MMMM");
         return this;
     }
@@ -330,7 +420,7 @@ export class Calendar extends BaseComponent{
      * Updates the calendar's year button's current year text.
      */
     private UpdateYearButtonText(): this{
-        const yearButton = this.Dom.querySelector(".year-button");
+        const yearButton = this.Dom.querySelector(".select-year-button");
         yearButton.textContent = this.CurrentDateTime.toFormat("yyyy");
         return this;
     }

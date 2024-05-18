@@ -2,11 +2,11 @@ $calendar-small-screen-width: 480px; // This can't be used for a media-query in 
 
 .date-time-picker-calendar-component{
     // --calendar-small-screen-width: 480px;
-    --calendar-dialog-bg-color: white;
-    --calendar-dialog-border-radius: 8px;
-    --calendar-dialog-box-shadow: 0 0.1rem 0 0 rgb(0 0 0 / 15%);
+    --calendar-container-bg-color: white;
+    --calendar-container-border-radius: 8px;
+    --calendar-container-box-shadow: 0 0.1rem 0.5rem 0rem rgb(0 0 0 / 15%);
     
-    --calendar-controls-container-padding: 1rem;
+    --calendar-section-container-padding: 1rem;
 
     --calendar-action-controls-font-size: 1.2rem;
 
@@ -51,4 +51,13 @@ $calendar-small-screen-width: 480px; // This can't be used for a media-query in 
     --calendar-controls-confirm-button-text-color: white;
     --calendar-controls-confirm-button-bg-color-hover: rgb(26 118 215);
     --calendar-controls-confirm-button-text-color-hover: white;
+
+    --calendar-month-selection-button-bg-color: none;
+    --calendar-month-selection-button-text-color: rgb(55,55,55);
+    --calendar-month-selection-button-border-radius: 4px;
+    --calendar-month-selection-button-bg-color-hover: rgb(248,248,248);
+    --calendar-month-selection-button-text-color-hover: rgb(55,55,55);
+
+    --calendar-active-month-button-bg-color: #238eff;
+    --calendar-active-month-button-text-color: white;
 }
