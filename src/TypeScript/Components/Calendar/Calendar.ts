@@ -103,7 +103,7 @@ export class Calendar extends BaseComponent{
         const dateTimesToRender: luxon.DateTime[] = this.GetListOfDateTimesToRenderOnCalendar();
         const dayButtonsContainer: HTMLElement = this.Dom.querySelector(".weekday-buttons");
         for (const dateTime of dateTimesToRender){
-            const buttonComponent = new DayButton(dateTime)
+            const buttonComponent = new DayButton(dateTime, currentDateTime)
                 .Build()
                 .RenderInto(dayButtonsContainer);
 
