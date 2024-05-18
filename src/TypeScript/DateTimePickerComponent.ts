@@ -1,6 +1,13 @@
 import * as luxon from "luxon";
 import { Calendar } from "./Components/Calendar/Calendar";
 import { ModalBackdrop } from "./Components/ModalBackdrop";
+import { BeforeDateTimeConfirmedEvent } from "./Events/BeforeDateTimeConfirmedEvent";
+import { BeforeDateNextEvent } from "./Events/BeforeDateNextEvent";
+
+type BeforeDateTimeConfirmedCallback = ((e: BeforeDateTimeConfirmedEvent) => void);
+type DateTimeConfirmedCallback = (() => void);
+type BeforeDateNextCallback = ((e: BeforeDateNextEvent) => void);
+type DateNextCallback = (() => void);
 
 export class DateTimePickerComponent{
     private Container: HTMLElement;
@@ -18,6 +25,10 @@ export class DateTimePickerComponent{
      * The order of the weekdays to display in the calendar. Can be overriden when using WithDatePicker()
      */
     private WeekdayIndices: number[] = [1,2,3,4,5,6,7];
+    private OnBeforeDateTimeConfirmedCallbacks: BeforeDateTimeConfirmedCallback[] = [];
+    private OnDateTimeConfirmedCallbacks: DateTimeConfirmedCallback[] = [];
+    private OnBeforeDateNextCallbacks: BeforeDateNextCallback[] = [];
+    private OnDateNextCallbacks: DateNextCallback[] = [];
 
     public constructor(container: HTMLElement){
         this.Container = container;
@@ -25,6 +36,80 @@ export class DateTimePickerComponent{
         this.Backdrop.OnClicked(e => {
             this.OnBackdropClicked(e);
         });
+    }
+
+    /**
+     * Registers an event to be called before the entire component's luxon.DateTime is confirmed and set by
+     * interacting with either the Calendar or Time picker components.
+     * @param callback 
+     * @returns 
+     */
+    public OnBeforeDateTimeConfirmed(callback: BeforeDateTimeConfirmedCallback): this{
+        this.OnBeforeDateTimeConfirmedCallbacks.push(callback);
+        return this;
+    }
+
+    public FireBeforeDateTimeConfirmed(e: BeforeDateTimeConfirmedEvent): this{
+        for (const callback of this.OnBeforeDateTimeConfirmedCallbacks){
+            callback(e);
+        }
+        return this;
+    }
+
+    /**
+     * Registers an event to be called after the entire component's luxon.DateTime is confirmed and set by
+     * interacting with either the Calendar or Time picker components.
+     * @param callback 
+     * @returns 
+     */
+    public OnDateTimeConfirmed(callback: DateTimeConfirmedCallback): this{
+        this.OnDateTimeConfirmedCallbacks.push(callback);
+        return this;
+    }
+
+    public FireDateTimeConfirmed(): this{
+        for (const callback of this.OnDateTimeConfirmedCallbacks){
+            callback();
+        }
+        return this;
+    }
+
+    /**
+     * Registers an event to be called before the Date picker's next button is clicked. This event can only be fired
+     * if both the Date and the Time pickers are enabled and thus a Next button exists on the calendar instead
+     * of a Confirm button.
+     * @param callback 
+     * @returns 
+     */
+    public OnBeforeDateNext(callback: BeforeDateNextCallback): this{
+        this.OnBeforeDateNextCallbacks.push(callback);
+        return this;
+    }
+
+    public FireBeforeDateNext(e: BeforeDateNextEvent): this{
+        for (const callback of this.OnBeforeDateNextCallbacks){
+            callback(e);
+        }
+        return this;
+    }
+
+    /**
+     * Registers an event to be called after the Date picker's next button is clicked. This event can only be fired
+     * if both the Date and the Time pickers are enabled and thus a Next button exists on the calendar instead
+     * of a Confirm button.
+     * @param callback 
+     * @returns 
+     */
+    public OnDateNext(callback: DateNextCallback): this{
+        this.OnDateNextCallbacks.push(callback);
+        return this;
+    }
+
+    public FireDateNext(): this{
+        for (const callback of this.OnDateNextCallbacks){
+            callback();
+        }
+        return this;
     }
 
     /**
@@ -50,6 +135,21 @@ export class DateTimePickerComponent{
      */
     public GetCurrentDateTime(): luxon.DateTime{
         return this.CurrentDateTime;
+    }
+
+    /**
+     * Sets the current month, day, and year of the CurrentDateTime of this component.
+     * @returns 
+     */
+    public SetCurrentDate(month: number, day: number, year: number): this{
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            month: month,
+            day: day,
+            year: year
+        });
+
+        this.SyncInputValueWithCurrentDateTime();
+        return this;
     }
 
     /**
@@ -99,6 +199,24 @@ export class DateTimePickerComponent{
     }
 
     /**
+     * Synchronizes this component's HTML input value with the CurrentDateTime by formatting
+     * the current date time and setting the input's value to that string.
+     */
+    public SyncInputValueWithCurrentDateTime(): this{
+        const input: HTMLInputElement = this.Dom.querySelector(".date-time-picker-input-component");
+        input.value = this.CurrentDateTime.toFormat("DD tt");
+        return this;
+    }
+
+    public GetDatePickerEnabled(): boolean{
+        return this.DatePickerEnabled;
+    }
+
+    public GetTimePickerEnabled(): boolean{
+        return this.TimePickerEnabled;
+    }
+
+    /**
      * Build the component's HTML elements
      * @returns 
      */
@@ -112,6 +230,7 @@ export class DateTimePickerComponent{
 
         if (this.DatePickerEnabled){
             this.Calendar = new Calendar(this)
+                .SetCurrentDateTime(this.CurrentDateTime)
                 .Build()
                 .RenderInto(document.body);
         }
@@ -132,6 +251,7 @@ export class DateTimePickerComponent{
     public Render(): this{
         this.Container.innerHTML = ``;
         this.Container.append(this.Dom);
+        this.SyncInputValueWithCurrentDateTime();
         return this;
     }
 

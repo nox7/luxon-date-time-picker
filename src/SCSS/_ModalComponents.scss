@@ -1,4 +1,6 @@
 .date-time-picker-modal{
+    box-sizing: border-box;
+    padding: 1rem;
     display: none;
     &.show{
         display: flex;

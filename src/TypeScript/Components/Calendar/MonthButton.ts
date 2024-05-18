@@ -1,12 +1,12 @@
-import { BaseComponent } from "./../BaseComponent";
+import { BaseComponent } from "../BaseComponent";
 
 /**
- * Represents an individual day on the calendar
+ * Represents an individual month button on the calendar's month selector.
  */
-export class DayButton extends BaseComponent{
+export class MonthButton extends BaseComponent{
     private DateTime: luxon.DateTime;
     /**
-     * The current DateTime represented by the user selection in the DateTimePicker component.
+     * The current DateTime represented by this month button. We are only concerned with the month itself.
      */
     private CurrentDateTime: luxon.DateTime;
     private OnClickedCallbacks: (() => void)[] = [];
@@ -34,14 +34,10 @@ export class DayButton extends BaseComponent{
         const template = document.createElement("button");
         template.setAttribute("type", "button");
         template.innerHTML = `
-            <span>${this.DateTime.toFormat("d")}</span>
+            <span>${this.DateTime.toFormat("MMMM")}</span>
         `;
 
-        if (this.DateTime.month !== this.CurrentDateTime.month){
-            template.classList.add("outside-of-month");
-        }
-
-        if (this.DateTime.month === this.CurrentDateTime.month && this.DateTime.day === this.CurrentDateTime.day){
+        if (this.DateTime.month === this.CurrentDateTime.month){
             template.classList.add("selected");
         }
 
