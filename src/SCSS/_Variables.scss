@@ -3,9 +3,10 @@ $calendar-small-screen-width: 480px; // This can't be used for a media-query in 
 .date-time-picker-calendar-component{
     // --calendar-small-screen-width: 480px;
     --calendar-dialog-bg-color: white;
-    --calendar-dialog-padding: 1rem;
     --calendar-dialog-border-radius: 8px;
     --calendar-dialog-box-shadow: 0 0.1rem 0 0 rgb(0 0 0 / 15%);
+    
+    --calendar-controls-container-padding: 1rem;
 
     --calendar-action-controls-font-size: 1.2rem;
 
@@ -38,6 +39,16 @@ $calendar-small-screen-width: 480px; // This can't be used for a media-query in 
     --calendar-outside-month-weekday-button-bg-color-hover: rgb(248,248,248);
     --calendar-outside-month-weekday-button-text-color-hover: rgb(150,150,150);
 
-    --calendar-active-weekday-button-bg-color: #3c64ff;
+    --calendar-active-weekday-button-bg-color: #238eff;
     --calendar-active-weekday-button-text-color: white;
+
+    --calendar-controls-cancel-button-bg-color: rgb(140,140,140);
+    --calendar-controls-cancel-button-text-color: white;
+    --calendar-controls-cancel-button-bg-color-hover: rgb(120,120,120);
+    --calendar-controls-cancel-button-text-color-hover: white;
+
+    --calendar-controls-confirm-button-bg-color: rgb(35, 142, 255);
+    --calendar-controls-confirm-button-text-color: white;
+    --calendar-controls-confirm-button-bg-color-hover: rgb(26 118 215);
+    --calendar-controls-confirm-button-text-color-hover: white;
 }

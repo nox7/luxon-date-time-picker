@@ -2,10 +2,21 @@ import * as luxon from "luxon";
 import { DateTimePickerComponent } from "../../DateTimePickerComponent";
 import { BaseComponent } from "./../BaseComponent";
 import { DayButton } from "./DayButton";
+import { BeforeDateTimeConfirmedEvent } from "../../Events/BeforeDateTimeConfirmedEvent";
 
 export class Calendar extends BaseComponent{
     private DateTimePicker: DateTimePickerComponent;
+    /**
+     * This is the current date time this calendar widget is working with and what the user has selected.
+     * The DateTimePicker date time is only set when the user confirms the CurrentDateTime from this Calendar
+     * component.
+     */
+    private CurrentDateTime: luxon.DateTime;
     private DayButtonComponents: DayButton[] = [];
+    private CancelButton: HTMLButtonElement;
+    private BackButton: HTMLButtonElement;
+    private ConfirmButton: HTMLButtonElement;
+    private NextButton: HTMLButtonElement;
 
     public constructor(dateTimePicker: DateTimePickerComponent){
         super();
@@ -13,7 +24,7 @@ export class Calendar extends BaseComponent{
     }
 
     public override Build(): this{
-        const currentDateTime: luxon.DateTime = this.DateTimePicker.GetCurrentDateTime();
+        const currentDateTime: luxon.DateTime = this.CurrentDateTime;
         const template = document.createElement("div");
         template.classList.add("date-time-picker-modal");
         template.classList.add("date-time-picker-calendar-component");
@@ -41,10 +52,28 @@ export class Calendar extends BaseComponent{
                 </div>
                 <div class="month-selection-container" style="display: none;"></div>
                 <div class="year-selection-container" style="display: none;"></div>
+                <div class="calendar-controls-buttons">
+                    <button type="button" class="close-button">
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" class="confirm-button">
+                    <span>Confirm</span>
+                    </button>
+                    <button type="button" class="back-button" style="display: none;">
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" class="next-button" style="display: none;">
+                        <span>Next</span>
+                    </button>
+                </div>
             </div>
         `;
 
         this.Dom = template;
+        this.CancelButton = template.querySelector(".close-button");
+        this.ConfirmButton = template.querySelector(".confirm-button");
+        this.BackButton = template.querySelector(".back-button");
+        this.NextButton = template.querySelector(".next-button");
 
         template.addEventListener("click", e => {
             this.OnComponentClicked(e);
@@ -68,12 +97,73 @@ export class Calendar extends BaseComponent{
         }
 
         this.RenderButtonsForCurrentMonth();
+
+        this.CancelButton.addEventListener("click", () => {
+            this.OnCancelButtonClicked();
+        });
+
+        this.ConfirmButton.addEventListener("click", () => {
+            this.OnConfirmButtonClicked();
+        });
         
         return this;
     }
 
+    private OnCancelButtonClicked(): void{
+        this.DateTimePicker.HideAll();
+    }
+
+    private OnConfirmButtonClicked(): void{
+        const beforeConfirmEvent: BeforeDateTimeConfirmedEvent = new BeforeDateTimeConfirmedEvent();
+        this.DateTimePicker.FireBeforeDateTimeConfirmed(beforeConfirmEvent);
+
+        if (!beforeConfirmEvent.Canceled){
+            this.DateTimePicker.SetCurrentDate(this.CurrentDateTime.month, this.CurrentDateTime.day, this.CurrentDateTime.year);
+            this.DateTimePicker.HideAll();
+        }
+    }
+
+    /**
+     * Shows the calendar modal component. Also logically shows/hides the correct buttons to either confirm the
+     * date or progress the calendar to render the time selector if it has been enabled.
+     * @returns 
+     */
     public Show(): this{
+        this.CancelButton.style.display = null;
+        this.BackButton.style.display = "none";
+
+        if (this.DateTimePicker.GetTimePickerEnabled()){
+            this.NextButton.style.display = "none";
+            this.ConfirmButton.style.display = null;
+        }else{
+            this.NextButton.style.display = null;
+            this.ConfirmButton.style.display = "none";
+        }
+
         this.Dom.classList.add("show");
+        return this;
+    }
+
+    /**
+     * Sets the current luxon.DateTime the calendar is using as a reference. Should not be called
+     * by methods inside this component - used for outside callers.
+     * @param dateTime 
+     * @returns 
+     */
+    public SetCurrentDateTime(dateTime: luxon.DateTime): this{
+        this.CurrentDateTime = dateTime;
+        return this;
+    }
+
+    /**
+     * Reloads the calendar's day buttons and labels.
+     * @returns 
+     */
+    public Reload(): this{
+        this.ClearCurrentDayButtons();
+        this.RenderButtonsForCurrentMonth();
+        this.UpdateMonthButtonText();
+        this.UpdateYearButtonText();
         return this;
     }
 
@@ -108,7 +198,7 @@ export class Calendar extends BaseComponent{
      * DateTimePicker property's current date time.
      */
     private RenderButtonsForCurrentMonth(): void{
-        const currentDateTime = this.DateTimePicker.GetCurrentDateTime();
+        const currentDateTime = this.CurrentDateTime;
         this.ClearCurrentDayButtons();
 
         const dateTimesToRender: luxon.DateTime[] = this.GetListOfDateTimesToRenderOnCalendar();
@@ -139,7 +229,7 @@ export class Calendar extends BaseComponent{
      */
     private GetListOfDateTimesToRenderOnCalendar(): luxon.DateTime[]{
         const dateTimesToRender: luxon.DateTime[] = [];
-        const currentDateTime = this.DateTimePicker.GetCurrentDateTime();
+        const currentDateTime = this.CurrentDateTime;
 
         // What week day does the current month start on?
         const firstDayOfCurrentMonth = currentDateTime.set({day: 1});
@@ -187,18 +277,18 @@ export class Calendar extends BaseComponent{
 
     /**
      * Called when a day button in the calendar is clicked. Sets the current Date (month, day, year)
-     * of the DateTimePicker's current date and then re-renders the calendar buttons based on the new
+     * and then re-renders the calendar buttons based on the new
      * date selected.
      * @param component 
      * @returns 
      */
     private OnDayButtonClicked(component: DayButton): this{
         const dateTime = component.GetDateTime();
-        this.DateTimePicker.SetCurrentDate(
-            dateTime.month,
-            dateTime.day,
-            dateTime.year
-        );
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            month: dateTime.month,
+            day: dateTime.day,
+            year: dateTime.year
+        });
 
         this.ClearCurrentDayButtons();
         this.RenderButtonsForCurrentMonth();
@@ -213,12 +303,12 @@ export class Calendar extends BaseComponent{
      * @param interval
      */
     private OnMonthChangeButtonClicked(interval: number): this{
-        const newDateTime = this.DateTimePicker.GetCurrentDateTime().plus({month: interval});
-        this.DateTimePicker.SetCurrentDate(
-            newDateTime.month,
-            newDateTime.day,
-            newDateTime.year
-        );
+        const newDateTime = this.CurrentDateTime.plus({month: interval});
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            month: newDateTime.month,
+            day: newDateTime.day,
+            year: newDateTime.year
+        });
 
         this.ClearCurrentDayButtons();
         this.RenderButtonsForCurrentMonth();
@@ -232,7 +322,7 @@ export class Calendar extends BaseComponent{
      */
     private UpdateMonthButtonText(): this{
         const monthButton = this.Dom.querySelector(".month-button");
-        monthButton.textContent = this.DateTimePicker.GetCurrentDateTime().toFormat("MMMM");
+        monthButton.textContent = this.CurrentDateTime.toFormat("MMMM");
         return this;
     }
 
@@ -241,7 +331,7 @@ export class Calendar extends BaseComponent{
      */
     private UpdateYearButtonText(): this{
         const yearButton = this.Dom.querySelector(".year-button");
-        yearButton.textContent = this.DateTimePicker.GetCurrentDateTime().toFormat("yyyy");
+        yearButton.textContent = this.CurrentDateTime.toFormat("yyyy");
         return this;
     }
 }

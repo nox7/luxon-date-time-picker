@@ -18,7 +18,6 @@
         flex-grow: 1;
         max-width: 425px;
         background-color: var(--calendar-dialog-bg-color);
-        padding: var(--calendar-dialog-padding);
         border-radius: var(--calendar-dialog-border-radius);
         box-shadow: var(--calendar-dialog-box-shadow);
 
@@ -26,6 +25,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            padding: var(--calendar-controls-container-padding);
 
             .month-year-controls-container{
                 display: flex;
@@ -95,10 +95,11 @@
                         text-align: center;
                         font-weight: bold;
                         font-size: 1.05rem;
-                        padding: 0.5rem;
+                        padding: 0.75rem;
 
                         @media (max-width: $calendar-small-screen-width){
                             font-size: 0.925rem;
+                            padding:0.45rem;
                         }
                     }
                 }
@@ -118,11 +119,12 @@
                         background: var(--calendar-weekday-button-bg-color);
                         border: none;
                         font-size: 1.05rem;
-                        padding: 0.5rem;
+                        padding: 1rem;
                         color: var(--calendar-weekday-button-text-color);
                         border-radius: var(--calendar-weekday-button-border-radius);
 
                         @media (max-width: $calendar-small-screen-width){
+                            padding:0.5rem;
                             font-size: 0.925rem;
                         }
 
@@ -148,7 +150,41 @@
                     }
                 }
             }
+        }
 
+        .calendar-controls-buttons{
+            display: flex;
+
+            button{
+                appearance: none;
+                border: none;
+                flex-grow: 1;
+                padding:1rem;
+                font-size:1.2rem;
+                width: 50%;
+
+                &.close-button{
+                    background-color: var(--calendar-controls-cancel-button-bg-color);
+                    color: var(--calendar-controls-cancel-button-text-color);
+
+                    &:hover{
+                        cursor: pointer;
+                        background-color: var(--calendar-controls-cancel-button-bg-color-hover);
+                        color: var(--calendar-controls-cancel-button-text-color-hover);
+                    }
+                }
+
+                &.confirm-button{
+                    background-color: var(--calendar-controls-confirm-button-bg-color);
+                    color: var(--calendar-controls-confirm-button-text-color);
+
+                    &:hover{
+                        cursor: pointer;
+                        background-color: var(--calendar-controls-confirm-button-bg-color-hover);
+                        color: var(--calendar-controls-confirm-button-text-color-hover);
+                    }
+                }
+            }
         }
     }
 }
