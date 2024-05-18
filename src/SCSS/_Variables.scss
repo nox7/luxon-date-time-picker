@@ -1,0 +1,26 @@
+.date-time-picker-calendar-component{
+    --calendar-dialog-bg-color: white;
+    --calendar-dialog-padding: 1rem;
+    --calendar-dialog-border-radius: 8px;
+    --calendar-dialog-box-shadow: 0 0.1rem 0 0 rgb(0 0 0 / 15%);
+
+    --calendar-action-controls-font-size: 1.2rem;
+
+    --calendar-month-change-button-padding: 0.35rem;
+    --calendar-month-change-button-bg-color: rgb(240,240,240);
+    --calendar-month-change-button-text-color: rgb(55,55,55);
+    --calendar-month-change-button-bg-color-hover: rgb(248,248,248);
+    --calendar-month-change-button-text-color-hover: rgb(55,55,55);
+
+    --calendar-month-button-padding: 0.35rem 1rem;
+    --calendar-month-button-bg-color: rgb(240,240,240);
+    --calendar-month-button-text-color: rgb(55,55,55);
+    --calendar-month-button-bg-color-hover: rgb(248,248,248);
+    --calendar-month-button-text-color-hover: rgb(55,55,55);
+
+    --calendar-year-button-padding: 0.35rem 1rem;
+    --calendar-year-button-bg-color: rgb(240,240,240);
+    --calendar-year-button-text-color: rgb(55,55,55);
+    --calendar-year-button-bg-color-hover: rgb(248,248,248);
+    --calendar-year-button-text-color-hover: rgb(55,55,55);
+}

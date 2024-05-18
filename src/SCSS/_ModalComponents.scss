@@ -1,0 +1,6 @@
+.date-time-picker-modal{
+    display: none;
+    &.show{
+        display: flex;
+    }
+}

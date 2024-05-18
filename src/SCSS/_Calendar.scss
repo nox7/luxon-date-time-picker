@@ -1,0 +1,99 @@
+.date-time-picker-calendar-component{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1001;
+    justify-content: center;
+    align-items: flex-start;
+
+    // The actual content container element
+    .dialog{
+        margin: 1rem;
+        flex-grow: 1;
+        max-width: 500px;
+        background-color: var(--calendar-dialog-bg-color);
+        padding: var(--calendar-dialog-padding);
+        border-radius: var(--calendar-dialog-border-radius);
+        box-shadow: var(--calendar-dialog-box-shadow);
+
+        .calendar-controls-container{
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .month-year-controls-container{
+                display: flex;
+                justify-content: space-between;
+                gap: 0.5rem;
+
+                .prev-month-button, .next-month-button{
+                    padding: var(--calendar-month-change-button-padding);
+                    border-radius: 4px;
+                    border: none;
+                    appearance: none;
+                    background-color: var(--calendar-month-change-button-bg-color);
+                    color: var(--calendar-month-change-button-text-color);
+                    font-size: var(--calendar-action-controls-font-size);
+                    
+                    &:hover{
+                        cursor: pointer;
+                        background-color: var(--calendar-month-change-button-bg-color-hover);
+                        color: var(--calendar-month-change-button-text-color-hover);
+                    }
+                }
+
+                .month-button{
+                    border-radius:4px;
+                    padding: var(--calendar-month-button-padding);
+                    border: none;
+                    appearance: none;
+                    background-color: var(--calendar-month-button-bg-color);
+                    color: var(--calendar-month-button-text-color);
+                    font-size: var(--calendar-action-controls-font-size);
+
+                    &:hover{
+                        cursor: pointer;
+                        background-color: var(--calendar-month-button-bg-color-hover);
+                        color: var(--calendar-month-button-text-color-hover);
+                    }
+                }
+
+                .year-button{
+                    border-radius:4px;
+                    padding: var(--calendar-year-button-padding);
+                    border: none;
+                    appearance: none;
+                    background-color: var(--calendar-year-button-bg-color);
+                    color: var(--calendar-year-button-text-color);
+                    font-size: var(--calendar-action-controls-font-size);
+
+                    &:hover{
+                        cursor: pointer;
+                        background-color: var(--calendar-year-button-bg-color-hover);
+                        color: var(--calendar-year-button-text-color-hover);
+                    }
+                }
+            }
+
+            .weekday-grid-container{
+                .weekdays-titles{
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    & > div{
+                        text-align: center;
+                        font-weight: bold;
+                    }
+                }
+
+                .weekday-buttons{
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    text-align: center;
+                }
+            }
+
+        }
+    }
+}

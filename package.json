@@ -2,6 +2,14 @@
   "devDependencies": {
     "gulp": "^4.0.0",
     "gulp-typescript": "^6.0.0-alpha.1",
+    "sass": "^1.77.2",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@types/luxon": "^3.4.2",
+    "babel-plugin-transform-remove-imports": "^1.7.1",
+    "babel-plugin-transform-rewrite-imports": "^1.2.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-sass": "^5.1.0"
   }
 }
