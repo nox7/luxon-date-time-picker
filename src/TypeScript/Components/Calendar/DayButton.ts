@@ -9,11 +9,25 @@ export class DayButton extends BaseComponent{
      * The current DateTime represented by the user selection in the DateTimePicker component.
      */
     private CurrentDateTime: luxon.DateTime;
+    private OnClickedCallbacks: (() => void)[] = [];
 
     public constructor(dateTime: luxon.DateTime, currentDateTime: luxon.DateTime){
         super();
         this.DateTime = dateTime;
         this.CurrentDateTime = currentDateTime;
+    }
+
+    /**
+     * Gets the luxon.DateTime that this button represents.
+     * @returns 
+     */
+    public GetDateTime(): luxon.DateTime{
+        return this.DateTime;
+    }
+
+    public OnClicked(callback: () => void): this{
+        this.OnClickedCallbacks.push(callback);
+        return this;
     }
 
     public override Build(): this{
@@ -31,7 +45,17 @@ export class DayButton extends BaseComponent{
             template.classList.add("selected");
         }
 
+        template.addEventListener("click", () => {
+            this.FireOnClickedCallbacks();
+        });
+
         this.Dom = template;
         return this;
+    }
+
+    private FireOnClickedCallbacks(): void{
+        for (const callback of this.OnClickedCallbacks){
+            callback();
+        }
     }
 }

@@ -50,6 +50,14 @@ export class Calendar extends BaseComponent{
             this.OnComponentClicked(e);
         });
 
+        template.querySelector(".prev-month-button").addEventListener("click", e => {
+            this.OnMonthChangeButtonClicked(-1);
+        });
+
+        template.querySelector(".next-month-button").addEventListener("click", e => {
+            this.OnMonthChangeButtonClicked(1);
+        });
+
         // Render weekday titles from user-defined weekday indices order
         const weekdayIndices = this.DateTimePicker.GetWeekdayIndices();
         for (const weekdayNumber of weekdayIndices){
@@ -87,6 +95,9 @@ export class Calendar extends BaseComponent{
         }
     }
 
+    /**
+     * Removes all the day buttons in the calendar widget, and clears the DayButtonComponents array of this instance.
+     */
     private ClearCurrentDayButtons(): void{
         this.DayButtonComponents.forEach(component => component.Remove());
         this.DayButtonComponents = [];
@@ -105,7 +116,10 @@ export class Calendar extends BaseComponent{
         for (const dateTime of dateTimesToRender){
             const buttonComponent = new DayButton(dateTime, currentDateTime)
                 .Build()
-                .RenderInto(dayButtonsContainer);
+                .RenderInto(dayButtonsContainer)
+                .OnClicked(() => {
+                    this.OnDayButtonClicked(buttonComponent);
+                });
 
             this.DayButtonComponents.push(buttonComponent);
         }
@@ -169,5 +183,65 @@ export class Calendar extends BaseComponent{
         }
 
         return dateTimesToRender;
+    }
+
+    /**
+     * Called when a day button in the calendar is clicked. Sets the current Date (month, day, year)
+     * of the DateTimePicker's current date and then re-renders the calendar buttons based on the new
+     * date selected.
+     * @param component 
+     * @returns 
+     */
+    private OnDayButtonClicked(component: DayButton): this{
+        const dateTime = component.GetDateTime();
+        this.DateTimePicker.SetCurrentDate(
+            dateTime.month,
+            dateTime.day,
+            dateTime.year
+        );
+
+        this.ClearCurrentDayButtons();
+        this.RenderButtonsForCurrentMonth();
+        this.UpdateMonthButtonText();
+        this.UpdateYearButtonText();
+        return this;
+    }
+
+    /**
+     * Called when one of the month change buttons is clicked. The interval provided is either 1 or -1 and shifts
+     * the current month by that interval. The day buttons are then cleared and re-rendered.
+     * @param interval
+     */
+    private OnMonthChangeButtonClicked(interval: number): this{
+        const newDateTime = this.DateTimePicker.GetCurrentDateTime().plus({month: interval});
+        this.DateTimePicker.SetCurrentDate(
+            newDateTime.month,
+            newDateTime.day,
+            newDateTime.year
+        );
+
+        this.ClearCurrentDayButtons();
+        this.RenderButtonsForCurrentMonth();
+        this.UpdateMonthButtonText();
+        this.UpdateYearButtonText();
+        return this;
+    }
+
+    /**
+     * Updates the calendar's month button's current month text.
+     */
+    private UpdateMonthButtonText(): this{
+        const monthButton = this.Dom.querySelector(".month-button");
+        monthButton.textContent = this.DateTimePicker.GetCurrentDateTime().toFormat("MMMM");
+        return this;
+    }
+
+    /**
+     * Updates the calendar's year button's current year text.
+     */
+    private UpdateYearButtonText(): this{
+        const yearButton = this.Dom.querySelector(".year-button");
+        yearButton.textContent = this.DateTimePicker.GetCurrentDateTime().toFormat("yyyy");
+        return this;
     }
 }

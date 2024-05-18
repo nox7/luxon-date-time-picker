@@ -53,6 +53,20 @@ export class DateTimePickerComponent{
     }
 
     /**
+     * Sets the current month, day, and year of the CurrentDateTime of this component.
+     * @returns 
+     */
+    public SetCurrentDate(month: number, day: number, year: number): this{
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            month: month,
+            day: day,
+            year: year
+        });
+        
+        return this;
+    }
+
+    /**
      * Returns the indices in the order defined for rendering on the calendar
      */
     public GetWeekdayIndices(): number[]{
