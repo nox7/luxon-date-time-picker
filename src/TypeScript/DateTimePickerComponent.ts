@@ -62,7 +62,8 @@ export class DateTimePickerComponent{
             day: day,
             year: year
         });
-        
+
+        this.SyncInputValueWithCurrentDateTime();
         return this;
     }
 
@@ -113,6 +114,16 @@ export class DateTimePickerComponent{
     }
 
     /**
+     * Synchronizes this component's HTML input value with the CurrentDateTime by formatting
+     * the current date time and setting the input's value to that string.
+     */
+    public SyncInputValueWithCurrentDateTime(): this{
+        const input: HTMLInputElement = this.Dom.querySelector(".date-time-picker-input-component");
+        input.value = this.CurrentDateTime.toFormat("DD tt");
+        return this;
+    }
+
+    /**
      * Build the component's HTML elements
      * @returns 
      */
@@ -146,6 +157,7 @@ export class DateTimePickerComponent{
     public Render(): this{
         this.Container.innerHTML = ``;
         this.Container.append(this.Dom);
+        this.SyncInputValueWithCurrentDateTime();
         return this;
     }
 
