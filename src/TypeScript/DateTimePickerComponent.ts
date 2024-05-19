@@ -25,6 +25,14 @@ export class DateTimePickerComponent{
      * The order of the weekdays to display in the calendar. Can be overriden when using WithDatePicker()
      */
     private WeekdayIndices: number[] = [1,2,3,4,5,6,7];
+    /**
+     * The interval of hours to allow the user to select
+     */
+    private HourInterval: number = 1;
+    /**
+     * The interval of minutes to allow the user to select. This will always start from the 0th minute of the hour.
+     */
+    private MinuteInterval: number = 1;
     private OnBeforeConfirmedCallbacks: BeforeConfirmedCallback[] = [];
     private OnBeforeDateNextCallbacks: BeforeDateNextCallback[] = [];
     private OnDateNextCallbacks: DateNextCallback[] = [];
@@ -171,6 +179,22 @@ export class DateTimePickerComponent{
     }
 
     /**
+     * Returns the interval at which hours can be stepped through on the UI
+     * @returns 
+     */
+    public GetHourInterval(): number{
+        return this.HourInterval;
+    }
+
+    /**
+     * Returns the interval at which minutes can be stepped through on the UI
+     * @returns 
+     */
+    public GetMinuteInterval(): number{
+        return this.MinuteInterval;
+    }
+
+    /**
      * Sets the component to build with a date picker. Optionally, you can provide an array of weekday indices to define
      * how the week days will be displayed in the calendar. For example, providing [1,2,3,4,5,6,7] will start the weeks in the
      * calendar from Monday. If they need to start from Sunday, then provide [7,1,2,3,4,5,6]
@@ -195,8 +219,16 @@ export class DateTimePickerComponent{
      * Sets the component to build with the time picker.
      * @returns 
      */
-    public WithTimePicker(): this{
+    public WithTimePicker(hourInterval: number | undefined = undefined, minuteInterval: number | undefined = undefined): this{
         this.TimePickerEnabled = true;
+
+        if (hourInterval !== undefined){
+            this.HourInterval = hourInterval;
+        }
+
+        if (minuteInterval !== undefined){
+            this.MinuteInterval = minuteInterval;
+        }
 
         return this;
     }

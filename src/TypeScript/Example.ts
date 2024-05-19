@@ -4,7 +4,7 @@ const exampleInput: HTMLInputElement = document.querySelector<HTMLInputElement>(
 const component = new DateTimePickerComponent()
     .WithDatePicker([1,2,3,4,5,6,7])
     // .WithDatePicker([7,1,2,3,4,5,6])
-    .WithTimePicker()
+    .WithTimePicker(1, 5)
     .Build()
     .OnConfirmed(() => {
         exampleInput.value = component.GetCurrentDateTime().toFormat("MMM dd, yyyy hh:mm a");

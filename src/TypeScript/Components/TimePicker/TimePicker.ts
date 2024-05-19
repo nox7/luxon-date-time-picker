@@ -38,7 +38,17 @@ export class TimePicker extends BaseComponent{
     }
 
     public SetCurrentDateTime(dateTime: luxon.DateTime): this{
-        this.CurrentDateTime = dateTime;
+
+        // Round the hour and minutes to the nearest intervals
+        const roundedMinuteAndHourIntervals = dateTime.set({
+            hour: this.RoundHourToInterval(dateTime.hour),
+            minute: this.RoundMinuteToInterval(dateTime.minute),
+        });
+
+        console.log(dateTime.minute);
+        console.log(roundedMinuteAndHourIntervals.minute);
+
+        this.CurrentDateTime = roundedMinuteAndHourIntervals;
         return this;
     }
 
@@ -154,19 +164,19 @@ export class TimePicker extends BaseComponent{
         });
 
         template.querySelector(".back-hour-button").addEventListener("click", () => {
-            this.ShiftHour(-1);
+            this.ShiftHour(-this.DateTimePicker.GetHourInterval());
         });
 
         template.querySelector(".next-hour-button").addEventListener("click", () => {
-            this.ShiftHour(1);
+            this.ShiftHour(this.DateTimePicker.GetHourInterval());
         });
 
         template.querySelector(".back-minute-button").addEventListener("click", () => {
-            this.ShiftMinute(-1);
+            this.ShiftMinute(-this.DateTimePicker.GetMinuteInterval());
         });
 
         template.querySelector(".next-minute-button").addEventListener("click", () => {
-            this.ShiftMinute(1);
+            this.ShiftMinute(this.DateTimePicker.GetMinuteInterval());
         });
 
         template.addEventListener("touchstart", (e: TouchEvent) => {
@@ -177,7 +187,7 @@ export class TimePicker extends BaseComponent{
             e.preventDefault();
             const deltaY = this.LastTouchPageY - e.touches[0].pageY;
             if (Math.abs(deltaY) >= this.LastTouchMoveThresholdMinute){
-                this.ShiftMinute(deltaY > 0 ? 1 : -1);
+                this.ShiftMinute(deltaY > 0 ? this.DateTimePicker.GetMinuteInterval() : -this.DateTimePicker.GetMinuteInterval());
                 this.LastTouchPageY = e.touches[0].pageY;
             }
         }, {passive: false});
@@ -186,7 +196,7 @@ export class TimePicker extends BaseComponent{
             e.preventDefault();
             const deltaY = this.LastTouchPageY - e.touches[0].pageY;
             if (Math.abs(deltaY) >= this.LastTouchMoveThresholdHour){
-                this.ShiftHour(deltaY > 0 ? 1 : -1);
+                this.ShiftHour(deltaY > 0 ? this.DateTimePicker.GetHourInterval() : -this.DateTimePicker.GetHourInterval());
                 this.LastTouchPageY = e.touches[0].pageY;
             }
         }, {passive: false});
@@ -218,7 +228,7 @@ export class TimePicker extends BaseComponent{
             return;
         }
 
-        this.ShiftHour(e.deltaY > 0 ? 1 : -1);
+        this.ShiftHour(e.deltaY > 0 ? this.DateTimePicker.GetHourInterval() : -this.DateTimePicker.GetHourInterval());
         return this;
     }
 
@@ -227,7 +237,7 @@ export class TimePicker extends BaseComponent{
             return;
         }
 
-        this.ShiftMinute(e.deltaY > 0 ? 1 : -1);
+        this.ShiftMinute(e.deltaY > 0 ? this.DateTimePicker.GetMinuteInterval() : -this.DateTimePicker.GetMinuteInterval());
         return this;
     }
 
@@ -385,7 +395,7 @@ export class TimePicker extends BaseComponent{
         // Render previous hours
         // i represents how many to render
         for (let i = 1; i <= 2; i++){
-            const component = new HourButton(this.CurrentDateTime.minus({hour: i}), this.CurrentDateTime)
+            const component = new HourButton(this.CurrentDateTime.minus({hour: i * this.DateTimePicker.GetHourInterval()}), this.CurrentDateTime)
                 .Build()
                 .RenderInto(this.Dom.querySelector(".prev-hour-buttons"))
                 .OnClicked(() => {
@@ -408,7 +418,7 @@ export class TimePicker extends BaseComponent{
         // Render next hours
         // i represents how many to render
         for (let i = 1; i <= 2; i++){
-            const component = new HourButton(this.CurrentDateTime.plus({hour: i}), this.CurrentDateTime)
+            const component = new HourButton(this.CurrentDateTime.plus({hour: i * this.DateTimePicker.GetHourInterval()}), this.CurrentDateTime)
                 .Build()
                 .RenderInto(this.Dom.querySelector(".next-hour-buttons"))
                 .OnClicked(() => {
@@ -427,7 +437,7 @@ export class TimePicker extends BaseComponent{
         // Render previous minutes
         // i represents how many to render
         for (let i = 1; i <= 2; i++){
-            const component = new MinuteButton(this.CurrentDateTime.minus({minute: i}), this.CurrentDateTime)
+            const component = new MinuteButton(this.CurrentDateTime.minus({minute: i * this.DateTimePicker.GetMinuteInterval()}), this.CurrentDateTime)
                 .Build()
                 .RenderInto(this.Dom.querySelector(".prev-minute-buttons"))
                 .OnClicked(() => {
@@ -450,7 +460,7 @@ export class TimePicker extends BaseComponent{
         // Render next minutes
         // i represents how many to render
         for (let i = 1; i <= 2; i++){
-            const component = new MinuteButton(this.CurrentDateTime.plus({minute: i}), this.CurrentDateTime)
+            const component = new MinuteButton(this.CurrentDateTime.plus({minute: i * this.DateTimePicker.GetMinuteInterval()}), this.CurrentDateTime)
                 .Build()
                 .RenderInto(this.Dom.querySelector(".next-minute-buttons"))
                 .OnClicked(() => {
@@ -513,5 +523,21 @@ export class TimePicker extends BaseComponent{
             hour: currentHourFromUI,
             minute: currentMinuteFromUI
         });
+    }
+
+    /**
+     * Returns a rounded minute to the nearest minute interval defined by the user
+     */
+    private RoundMinuteToInterval(minute: number): number{
+        const interval = this.DateTimePicker.GetMinuteInterval();
+        return Math.ceil(minute / interval) * interval;
+    }
+
+    /**
+     * Returns a rounded hour to the nearest hour interval defined by the user
+     */
+    private RoundHourToInterval(hour: number): number{
+        const interval = this.DateTimePicker.GetHourInterval();
+        return Math.ceil(hour / interval) * interval;
     }
 }
