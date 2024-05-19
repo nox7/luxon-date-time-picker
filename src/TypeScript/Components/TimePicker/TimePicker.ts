@@ -1,3 +1,4 @@
+import * as luxon from "luxon";
 import { DateTimePickerComponent } from "../../DateTimePickerComponent";
 import { DateTimePickerWidget } from "../../DateTimePickerWidget";
 import { BaseComponent } from "../BaseComponent";
@@ -130,6 +131,84 @@ export class TimePicker extends BaseComponent{
             this.SelectPMButton();
         }
 
+        this.AMButton.addEventListener("click", () => {
+            this.SelectAMButton();
+        });
+
+        this.PMButton.addEventListener("click", () => {
+            this.SelectPMButton();
+        });
+
+        template.querySelector(".back-hour-button").addEventListener("click", () => {
+            this.ShiftHour(-1);
+        });
+
+        template.querySelector(".next-hour-button").addEventListener("click", () => {
+            this.ShiftHour(1);
+        });
+
+        template.querySelector(".back-minute-button").addEventListener("click", () => {
+            this.ShiftMinute(-1);
+        });
+
+        template.querySelector(".next-minute-button").addEventListener("click", () => {
+            this.ShiftMinute(1);
+        });
+
+        template.querySelector(".minute-section").addEventListener("wheel", (e: WheelEvent) => {
+            this.OnMinuteWheel(e);
+        });
+
+        template.querySelector(".hour-section").addEventListener("wheel", (e: WheelEvent) => {
+            this.OnHourWheel(e);
+        });
+
+        return this;
+    }
+
+    private OnHourWheel(e: WheelEvent): this{
+        this.ShiftHour(e.deltaY > 0 ? 1 : -1);
+        return this;
+    }
+
+    private OnMinuteWheel(e: WheelEvent): this{
+        this.ShiftMinute(e.deltaY > 0 ? 1 : -1);
+        return this;
+    }
+
+    /**
+     * Shifts the current minute by the provided interval
+     * @param interval 
+     */
+    private ShiftMinute(interval: number): this{
+        const currentMinute = this.GetCurrentMinuteFromUI();
+        let newMinute = (currentMinute + interval) % 60;
+
+        if (newMinute < 0){
+            newMinute += 60;
+        }
+
+        console.log(newMinute);
+        this.CurrentDateTime = this.CurrentDateTime.set({minute: newMinute});
+        this.Reload();
+        return this;
+    }
+
+    /**
+     * Shifts the current hour by the provided interval
+     * @param interval 
+     */
+    private ShiftHour(interval: number): this{
+        const currentHour = this.GetCurrentHourAs12HourFromUI();
+        let newHour = (currentHour + interval) % 12
+        if (this.IsAMButtonSelected()){
+            this.CurrentDateTime = this.CurrentDateTime.set({hour: newHour < 12 ? newHour : 0});
+        }else{
+            let hourOutOf24HoursToSet = newHour < 12 ? newHour + 12 : 12;
+            this.CurrentDateTime = this.CurrentDateTime.set({hour: hourOutOf24HoursToSet});
+        }
+
+        this.Reload();
         return this;
     }
 
@@ -138,33 +217,42 @@ export class TimePicker extends BaseComponent{
         this.DateTimePicker.Show(DateTimePickerWidget.DATE_PICKER);
         return this;
     }
+    
+    /**
+     * Returns if the AM button is currently selected.
+     */
+    private IsAMButtonSelected(): boolean{
+        return this.Dom.querySelector(".am-button").classList.contains("selected");
+    }
 
     /**
      * Determines if the CurrentDateTime represents an anti meridiem time
      */
     private IsCurrentTimeAM(): boolean{
-        return this.CurrentDateTime.hour < 13;
+        return this.CurrentDateTime.hour < 12;
     }
 
-    public SelectAMButton(): this{
+    private SelectAMButton(): this{
         if (!this.AMButton.classList.contains("selected")){
             if (this.PMButton.classList.contains("selected")){
                 this.PMButton.classList.remove("selected");
             }
 
             this.AMButton.classList.add("selected");
+            this.CurrentDateTime = this.GetDateTimeFromControls();
         }
 
         return this;
     }
 
-    public SelectPMButton(): this{
+    private SelectPMButton(): this{
         if (!this.PMButton.classList.contains("selected")){
             if (this.AMButton.classList.contains("selected")){
                 this.AMButton.classList.remove("selected");
             }
 
             this.PMButton.classList.add("selected");
+            this.CurrentDateTime = this.GetDateTimeFromControls();
         }
 
         return this;
@@ -194,6 +282,21 @@ export class TimePicker extends BaseComponent{
 
     public Hide(): this{
         this.Dom.classList.remove("show");
+        return this;
+    }
+
+    /**
+     * Reloads the hour, minute, and meridiem controls to reflect the CurrentDateTime
+     */
+    public Reload(): this{
+        this.RenderHourButtons();
+        this.RenderMinuteButtons();
+        if (this.IsCurrentTimeAM()){
+            this.SelectAMButton();
+        }else{
+            this.SelectPMButton();
+        }
+
         return this;
     }
 
@@ -312,5 +415,49 @@ export class TimePicker extends BaseComponent{
 
     private OnMinuteButtonClicked(component: MinuteButton): this{
         return this;
+    }
+
+    /**
+     * Gets the current hour from the time picker UI in 12-hour notation.
+     */
+    private GetCurrentHourAs12HourFromUI(): number{
+        let currentHourFromUI = parseInt(this.Dom.querySelector(".current-hour-button").textContent);
+        return currentHourFromUI;
+    }
+
+    /**
+     * Gets the current hour from the time picker UI in 24-hour notation.
+     */
+    private GetCurrentHourAs24HourFromUI(): number{
+        let currentHourFromUI = this.GetCurrentHourAs12HourFromUI();
+        if (!this.IsAMButtonSelected()){
+            currentHourFromUI += 12;
+        }else{
+            // Change 12AM to be hour 0
+            if (currentHourFromUI === 12){
+                currentHourFromUI = 0;
+            }
+        }
+
+        return currentHourFromUI;
+    }
+
+    private GetCurrentMinuteFromUI(): number{
+        return parseInt(this.Dom.querySelector(".current-minute-button").textContent);
+    }
+
+    /**
+     * Retrieves a luxon.DateTime object where the hour and minute are set to match the current
+     * controls selection in the UI.
+     */
+    private GetDateTimeFromControls(): luxon.DateTime{
+        const now = luxon.DateTime.now();
+        const currentHourFromUI = this.GetCurrentHourAs24HourFromUI();
+        const currentMinuteFromUI = this.GetCurrentMinuteFromUI();
+
+        return now.set({
+            hour: currentHourFromUI,
+            minute: currentMinuteFromUI
+        });
     }
 }
