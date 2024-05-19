@@ -2,8 +2,7 @@ import { DateTimePickerComponent } from "./DateTimePickerComponent.js";
 
 const exampleInput: HTMLInputElement = document.querySelector<HTMLInputElement>("#date-time-picker-input");
 const component = new DateTimePickerComponent()
-    //.WithDatePicker([1,2,3,4,5,6,7])
-    // .WithDatePicker([7,1,2,3,4,5,6])
+    .WithDatePicker([1,2,3,4,5,6,7])
     .WithTimePicker(1, 5)
     .Build()
     .OnConfirmed(() => {
