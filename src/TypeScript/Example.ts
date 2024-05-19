@@ -1,8 +1,17 @@
 import { DateTimePickerComponent } from "./DateTimePickerComponent.js";
 
-const component = new DateTimePickerComponent(document.querySelector("#date-time-picker"))
+const exampleInput: HTMLInputElement = document.querySelector<HTMLInputElement>("#date-time-picker-input");
+const component = new DateTimePickerComponent()
     .WithDatePicker([1,2,3,4,5,6,7])
     // .WithDatePicker([7,1,2,3,4,5,6])
     .WithTimePicker()
     .Build()
-    .Render();
+    .OnConfirmed(() => {
+        exampleInput.value = component.GetCurrentDateTime().toFormat("MMM dd, yyyy hh:mm a");
+        component.HideAll();
+    });
+
+exampleInput.addEventListener("focus", () => {
+    exampleInput.blur();
+    component.Show();
+});

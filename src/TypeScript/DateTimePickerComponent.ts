@@ -12,8 +12,6 @@ type DateNextCallback = (() => void);
 type ConfirmedCallback = (() => void);
 
 export class DateTimePickerComponent{
-    private Container: HTMLElement;
-    private Dom: HTMLElement;
     private Backdrop: ModalBackdrop;
     private DatePickerEnabled: boolean = false;
     private TimePickerEnabled: boolean = false;
@@ -32,8 +30,7 @@ export class DateTimePickerComponent{
     private OnDateNextCallbacks: DateNextCallback[] = [];
     private OnConfirmedCallbacks: ConfirmedCallback[] = [];
 
-    public constructor(container: HTMLElement){
-        this.Container = container;
+    public constructor(){
         this.Backdrop = new ModalBackdrop();
         this.Backdrop.OnClicked(e => {
             this.OnBackdropClicked(e);
@@ -150,8 +147,6 @@ export class DateTimePickerComponent{
             day: day,
             year: year
         });
-
-        this.SyncInputValueWithCurrentDateTime();
         return this;
     }
 
@@ -160,14 +155,11 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public SetCurrentTime(hour: number, minute: number, second: number): this{
-        console.log(hour, minute, second);
         this.CurrentDateTime = this.CurrentDateTime.set({
             hour: hour,
             minute: minute,
             second: second,
         });
-
-        this.SyncInputValueWithCurrentDateTime();
         return this;
     }
 
@@ -185,10 +177,6 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public WithDatePicker(weekdayIndices: number[] | undefined = undefined): this{
-        if (this.Dom !== undefined){
-            throw "Cannot call method when Build() has already been called.";
-        }
-
         if (weekdayIndices !== undefined){
             if (weekdayIndices.length !== 7){
                 throw "Cannot provide weekdayIndices that doesn't have an array length of 7";
@@ -208,22 +196,8 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public WithTimePicker(): this{
-        if (this.Dom !== undefined){
-            throw "Cannot call method when Build() has already been called.";
-        }
-
         this.TimePickerEnabled = true;
 
-        return this;
-    }
-
-    /**
-     * Synchronizes this component's HTML input value with the CurrentDateTime by formatting
-     * the current date time and setting the input's value to that string.
-     */
-    public SyncInputValueWithCurrentDateTime(): this{
-        const input: HTMLInputElement = this.Dom.querySelector(".date-time-picker-input-component");
-        input.value = this.CurrentDateTime.toFormat("DD tt");
         return this;
     }
 
@@ -240,13 +214,6 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public Build(): this{
-        const template = document.createElement("div");
-        template.innerHTML = `
-            <input type="text" class="date-time-picker-input-component">
-        `;
-
-        const input: HTMLInputElement = template.querySelector(".date-time-picker-input-component");
-
         if (this.DatePickerEnabled){
             this.Calendar = new Calendar(this)
                 .SetCurrentDateTime(this.CurrentDateTime)
@@ -260,33 +227,7 @@ export class DateTimePickerComponent{
                 .Build()
                 .RenderInto(document.body);
         }
-
-        input.addEventListener("focus", () => {
-            this.OnDateTimePickerInputFocused();
-        });
-
-        this.Dom = template;
         return this;
-    }
-
-    /**
-     * Renders the component into the constructed container. Clears the container's
-     * innerHTML before appending this component's Dom.
-     * @returns 
-     */
-    public Render(): this{
-        this.Container.innerHTML = ``;
-        this.Container.append(this.Dom);
-        this.SyncInputValueWithCurrentDateTime();
-        return this;
-    }
-
-    /**
-     * Called when the picker input is focused by the user.
-     */
-    private OnDateTimePickerInputFocused(): void{
-        this.Backdrop.Show();
-        this.Calendar.Show();
     }
 
     /**
