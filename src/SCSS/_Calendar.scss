@@ -247,6 +247,17 @@
                             color: var(--calendar-controls-confirm-button-text-color-hover);
                         }
                     }
+
+                    &.next-button{
+                        background-color: var(--calendar-controls-next-button-bg-color);
+                        color: var(--calendar-controls-next-button-text-color);
+
+                        &:hover{
+                            cursor: pointer;
+                            background-color: var(--calendar-controls-next-button-bg-color-hover);
+                            color: var(--calendar-controls-next-button-text-color-hover);
+                        }
+                    }
                 }
             }
         }

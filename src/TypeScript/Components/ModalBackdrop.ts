@@ -53,8 +53,10 @@ export class ModalBackdrop{
      * Shows the modal backdrop
      */
     public Show(){
-        document.body.classList.add("date-picker-component-backdrop-shown");
-        this.Dom.classList.add("shown");
+        if (!document.body.classList.contains("date-picker-component-backdrop-shown")){
+            document.body.classList.add("date-picker-component-backdrop-shown");
+            this.Dom.classList.add("shown");
+        }
     }
 
     /**

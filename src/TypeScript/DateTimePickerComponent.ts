@@ -1,17 +1,17 @@
 import * as luxon from "luxon";
 import { Calendar } from "./Components/Calendar/Calendar";
 import { ModalBackdrop } from "./Components/ModalBackdrop";
-import { BeforeDateTimeConfirmedEvent } from "./Events/BeforeDateTimeConfirmedEvent";
+import { BeforeConfirmedEvent } from "./Events/BeforeConfirmedEvent";
 import { BeforeDateNextEvent } from "./Events/BeforeDateNextEvent";
+import { DateTimePickerWidget } from "./DateTimePickerWidget";
+import { TimePicker } from "./Components/TimePicker/TimePicker";
 
-type BeforeDateTimeConfirmedCallback = ((e: BeforeDateTimeConfirmedEvent) => void);
-type DateTimeConfirmedCallback = (() => void);
+type BeforeConfirmedCallback = ((e: BeforeConfirmedEvent) => void);
 type BeforeDateNextCallback = ((e: BeforeDateNextEvent) => void);
 type DateNextCallback = (() => void);
+type ConfirmedCallback = (() => void);
 
 export class DateTimePickerComponent{
-    private Container: HTMLElement;
-    private Dom: HTMLElement;
     private Backdrop: ModalBackdrop;
     private DatePickerEnabled: boolean = false;
     private TimePickerEnabled: boolean = false;
@@ -25,13 +25,20 @@ export class DateTimePickerComponent{
      * The order of the weekdays to display in the calendar. Can be overriden when using WithDatePicker()
      */
     private WeekdayIndices: number[] = [1,2,3,4,5,6,7];
-    private OnBeforeDateTimeConfirmedCallbacks: BeforeDateTimeConfirmedCallback[] = [];
-    private OnDateTimeConfirmedCallbacks: DateTimeConfirmedCallback[] = [];
+    /**
+     * The interval of hours to allow the user to select
+     */
+    private HourInterval: number = 1;
+    /**
+     * The interval of minutes to allow the user to select. This will always start from the 0th minute of the hour.
+     */
+    private MinuteInterval: number = 1;
+    private OnBeforeConfirmedCallbacks: BeforeConfirmedCallback[] = [];
     private OnBeforeDateNextCallbacks: BeforeDateNextCallback[] = [];
     private OnDateNextCallbacks: DateNextCallback[] = [];
+    private OnConfirmedCallbacks: ConfirmedCallback[] = [];
 
-    public constructor(container: HTMLElement){
-        this.Container = container;
+    public constructor(){
         this.Backdrop = new ModalBackdrop();
         this.Backdrop.OnClicked(e => {
             this.OnBackdropClicked(e);
@@ -44,13 +51,13 @@ export class DateTimePickerComponent{
      * @param callback 
      * @returns 
      */
-    public OnBeforeDateTimeConfirmed(callback: BeforeDateTimeConfirmedCallback): this{
-        this.OnBeforeDateTimeConfirmedCallbacks.push(callback);
+    public OnBeforeConfirmed(callback: BeforeConfirmedCallback): this{
+        this.OnBeforeConfirmedCallbacks.push(callback);
         return this;
     }
 
-    public FireBeforeDateTimeConfirmed(e: BeforeDateTimeConfirmedEvent): this{
-        for (const callback of this.OnBeforeDateTimeConfirmedCallbacks){
+    public FireBeforeConfirmed(e: BeforeConfirmedEvent): this{
+        for (const callback of this.OnBeforeConfirmedCallbacks){
             callback(e);
         }
         return this;
@@ -62,13 +69,13 @@ export class DateTimePickerComponent{
      * @param callback 
      * @returns 
      */
-    public OnDateTimeConfirmed(callback: DateTimeConfirmedCallback): this{
-        this.OnDateTimeConfirmedCallbacks.push(callback);
+    public OnConfirmed(callback: ConfirmedCallback): this{
+        this.OnConfirmedCallbacks.push(callback);
         return this;
     }
 
-    public FireDateTimeConfirmed(): this{
-        for (const callback of this.OnDateTimeConfirmedCallbacks){
+    public FireConfirmed(): this{
+        for (const callback of this.OnConfirmedCallbacks){
             callback();
         }
         return this;
@@ -118,6 +125,7 @@ export class DateTimePickerComponent{
     public HideAll(): void{
         this.Backdrop.Hide();
         this.Calendar.Hide();
+        this.TimePicker.Hide();
     }
 
     /**
@@ -147,8 +155,19 @@ export class DateTimePickerComponent{
             day: day,
             year: year
         });
+        return this;
+    }
 
-        this.SyncInputValueWithCurrentDateTime();
+    /**
+     * Sets the current month, day, and year of the CurrentDateTime of this component.
+     * @returns 
+     */
+    public SetCurrentTime(hour: number, minute: number, second: number): this{
+        this.CurrentDateTime = this.CurrentDateTime.set({
+            hour: hour,
+            minute: minute,
+            second: second,
+        });
         return this;
     }
 
@@ -160,16 +179,28 @@ export class DateTimePickerComponent{
     }
 
     /**
+     * Returns the interval at which hours can be stepped through on the UI
+     * @returns 
+     */
+    public GetHourInterval(): number{
+        return this.HourInterval;
+    }
+
+    /**
+     * Returns the interval at which minutes can be stepped through on the UI
+     * @returns 
+     */
+    public GetMinuteInterval(): number{
+        return this.MinuteInterval;
+    }
+
+    /**
      * Sets the component to build with a date picker. Optionally, you can provide an array of weekday indices to define
      * how the week days will be displayed in the calendar. For example, providing [1,2,3,4,5,6,7] will start the weeks in the
      * calendar from Monday. If they need to start from Sunday, then provide [7,1,2,3,4,5,6]
      * @returns 
      */
     public WithDatePicker(weekdayIndices: number[] | undefined = undefined): this{
-        if (this.Dom !== undefined){
-            throw "Cannot call method when Build() has already been called.";
-        }
-
         if (weekdayIndices !== undefined){
             if (weekdayIndices.length !== 7){
                 throw "Cannot provide weekdayIndices that doesn't have an array length of 7";
@@ -188,23 +219,17 @@ export class DateTimePickerComponent{
      * Sets the component to build with the time picker.
      * @returns 
      */
-    public WithTimePicker(): this{
-        if (this.Dom !== undefined){
-            throw "Cannot call method when Build() has already been called.";
-        }
-
+    public WithTimePicker(hourInterval: number | undefined = undefined, minuteInterval: number | undefined = undefined): this{
         this.TimePickerEnabled = true;
 
-        return this;
-    }
+        if (hourInterval !== undefined){
+            this.HourInterval = hourInterval;
+        }
 
-    /**
-     * Synchronizes this component's HTML input value with the CurrentDateTime by formatting
-     * the current date time and setting the input's value to that string.
-     */
-    public SyncInputValueWithCurrentDateTime(): this{
-        const input: HTMLInputElement = this.Dom.querySelector(".date-time-picker-input-component");
-        input.value = this.CurrentDateTime.toFormat("DD tt");
+        if (minuteInterval !== undefined){
+            this.MinuteInterval = minuteInterval;
+        }
+
         return this;
     }
 
@@ -221,13 +246,6 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public Build(): this{
-        const template = document.createElement("div");
-        template.innerHTML = `
-            <input type="text" class="date-time-picker-input-component">
-        `;
-
-        const input: HTMLInputElement = template.querySelector(".date-time-picker-input-component");
-
         if (this.DatePickerEnabled){
             this.Calendar = new Calendar(this)
                 .SetCurrentDateTime(this.CurrentDateTime)
@@ -235,32 +253,13 @@ export class DateTimePickerComponent{
                 .RenderInto(document.body);
         }
 
-        input.addEventListener("focus", () => {
-            this.OnDateTimePickerInputFocused();
-        });
-
-        this.Dom = template;
+        if (this.TimePickerEnabled){
+            this.TimePicker = new TimePicker(this)
+                .SetCurrentDateTime(this.CurrentDateTime)
+                .Build()
+                .RenderInto(document.body);
+        }
         return this;
-    }
-
-    /**
-     * Renders the component into the constructed container. Clears the container's
-     * innerHTML before appending this component's Dom.
-     * @returns 
-     */
-    public Render(): this{
-        this.Container.innerHTML = ``;
-        this.Container.append(this.Dom);
-        this.SyncInputValueWithCurrentDateTime();
-        return this;
-    }
-
-    /**
-     * Called when the picker input is focused by the user.
-     */
-    private OnDateTimePickerInputFocused(): void{
-        this.Backdrop.Show();
-        this.Calendar.Show();
     }
 
     /**
@@ -270,6 +269,66 @@ export class DateTimePickerComponent{
      */
     private OnBackdropClicked(e: MouseEvent): this{
         this.HideAll();
+        return this;
+    }
+
+    /**
+     * Called by the internal widgets. This is called when the user confirms their final choice in
+     * the widgets. From whichever is enabled (or both) it will fetch the date from the calendar widget
+     * and the time from the time picker widget.
+     */
+    public ConfirmSelection(): void{
+        if (this.GetDatePickerEnabled()){
+            const dateTimeFromCalendar = this.Calendar.GetCurrentDateTime();
+            this.SetCurrentDate(dateTimeFromCalendar.month, dateTimeFromCalendar.day, dateTimeFromCalendar.year);
+        }
+
+        if (this.GetTimePickerEnabled()){
+            const dateTimeFromTimePicker = this.TimePicker.GetCurrentDateTime();
+            this.SetCurrentTime(dateTimeFromTimePicker.hour, dateTimeFromTimePicker.minute, dateTimeFromTimePicker.second);
+        }
+
+        this.FireConfirmed();
+    }
+
+    /**
+     * If no argument is provided, shows the logical first picker. If both the date and time pickers are enabled,
+     * this will be the date picker. If only the time picker is enabled, it will be the time picker. If only the date picker
+     * is enabled, then the date picker.
+     * 
+     * If an argument is provided, then it attempts to show the provided picker widget requested - if it is enabled.
+     * @returns 
+     */
+    public Show(widgetEnum: DateTimePickerWidget | undefined = undefined): this{
+        if (widgetEnum === DateTimePickerWidget.DATE_PICKER && !this.GetDatePickerEnabled()){
+            throw "Cannot show the date picker widget - it is not enabled.";
+        }
+
+        if (widgetEnum === DateTimePickerWidget.TIME_PICKER && !this.GetTimePickerEnabled()){
+            throw "Cannot show the time picker widget - it is not enabled.";
+        }
+
+        // Show the modal backdrop regardless of which widget will be shown
+        this.Backdrop.Show();
+
+        if (widgetEnum === undefined){
+            if (this.GetDatePickerEnabled()){
+                this.Calendar.Show();
+            }else if (this.GetTimePickerEnabled()){
+                this.TimePicker.Show();
+            }else{
+                throw "No widgets are enabled. Cannot show either. You must enable one or both before building this DateTimePickerComponent class.";
+            }
+        }else{
+            if (widgetEnum === DateTimePickerWidget.DATE_PICKER){
+                this.Calendar.Show();
+            }else if (widgetEnum === DateTimePickerWidget.TIME_PICKER){
+                this.TimePicker.Show();
+            }else{
+                throw "Unknown widget enum provided.";
+            }
+        }
+
         return this;
     }
 }
