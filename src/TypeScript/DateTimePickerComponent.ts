@@ -160,6 +160,7 @@ export class DateTimePickerComponent{
      * @returns 
      */
     public SetCurrentTime(hour: number, minute: number, second: number): this{
+        console.log(hour, minute, second);
         this.CurrentDateTime = this.CurrentDateTime.set({
             hour: hour,
             minute: minute,
@@ -311,8 +312,10 @@ export class DateTimePickerComponent{
 
         if (this.GetTimePickerEnabled()){
             const dateTimeFromTimePicker = this.TimePicker.GetCurrentDateTime();
-            this.SetCurrentTime(dateTimeFromTimePicker.hour, dateTimeFromTimePicker.minus, dateTimeFromTimePicker.second);
+            this.SetCurrentTime(dateTimeFromTimePicker.hour, dateTimeFromTimePicker.minute, dateTimeFromTimePicker.second);
         }
+
+        this.FireConfirmed();
     }
 
     /**

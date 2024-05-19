@@ -4,6 +4,7 @@ import { DateTimePickerWidget } from "../../DateTimePickerWidget";
 import { BaseComponent } from "../BaseComponent";
 import { HourButton } from "./HourButton";
 import { MinuteButton } from "./MinuteButton";
+import { BeforeConfirmedEvent } from "../../Events/BeforeConfirmedEvent";
 
 export class TimePicker extends BaseComponent{
     private DateTimePicker: DateTimePickerComponent;
@@ -131,6 +132,10 @@ export class TimePicker extends BaseComponent{
             this.OnBackButtonClicked();
         });
 
+        this.ConfirmButton.addEventListener("click", () => {
+            this.OnConfirmButtonClicked();
+        });
+
         this.RenderHourButtons();
         this.RenderMinuteButtons();
 
@@ -195,6 +200,17 @@ export class TimePicker extends BaseComponent{
         });
 
         return this;
+    }
+
+    private OnConfirmButtonClicked(): void{
+        const beforeConfirmEvent: BeforeConfirmedEvent = new BeforeConfirmedEvent();
+        beforeConfirmEvent.DateTime = this.CurrentDateTime;
+
+        this.DateTimePicker.FireBeforeConfirmed(beforeConfirmEvent);
+
+        if (!beforeConfirmEvent.Canceled){
+            this.DateTimePicker.ConfirmSelection();
+        }
     }
 
     private OnHourWheel(e: WheelEvent): this{
