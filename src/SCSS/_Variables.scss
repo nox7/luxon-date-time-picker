@@ -85,6 +85,10 @@ $time-picker-small-screen-width: 480px; // This can't be used for a media-query 
     --time-picker-section-container-padding: 1rem;
 
     --time-picker-action-controls-font-size: 1.2rem;
+    --time-picker-change-time-control-button-bg-color: rgb(240,240,240);
+    --time-picker-change-time-control-button-text-color: rgb(60,60,60);
+    --time-picker-change-time-control-button-bg-color-hover: rgb(248,248,248);
+    --time-picker-change-time-control-button-text-color-hover: rgb(60,60,60);
 
     --time-picker-controls-cancel-button-bg-color: rgb(240,240,240);
     --time-picker-controls-cancel-button-text-color: rgb(60,60,60);;
@@ -100,4 +104,14 @@ $time-picker-small-screen-width: 480px; // This can't be used for a media-query 
     --time-picker-controls-confirm-button-text-color: white;
     --time-picker-controls-confirm-button-bg-color-hover: rgb(26 118 215);
     --time-picker-controls-confirm-button-text-color-hover: white;
+
+    --time-picker-controls-meridiem-button-bg-color: none;
+    --time-picker-controls-meridiem-button-text-color: rgb(60,60,60);
+    --time-picker-controls-meridiem-button-bg-color-hover: rgb(248,248,248);
+    --time-picker-controls-meridiem-button-text-color-hover: rgb(60,60,60);
+
+    --time-picker-controls-meridiem-button-selected-bg-color: rgb(35, 142, 255);
+    --time-picker-controls-meridiem-button-selected-text-color: white;
+    --time-picker-controls-meridiem-button-selected-bg-color-hover: rgb(26 118 215);
+    --time-picker-controls-meridiem-button-selected-text-color-hover: white;
 }
