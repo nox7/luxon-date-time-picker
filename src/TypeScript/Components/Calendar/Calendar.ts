@@ -2,9 +2,10 @@ import * as luxon from "luxon";
 import { DateTimePickerComponent } from "../../DateTimePickerComponent";
 import { BaseComponent } from "./../BaseComponent";
 import { DayButton } from "./DayButton";
-import { BeforeDateTimeConfirmedEvent } from "../../Events/BeforeDateTimeConfirmedEvent";
+import { BeforeConfirmedEvent } from "../../Events/BeforeConfirmedEvent";
 import { MonthButton } from "./MonthButton";
 import { YearButton } from "./YearButton";
+import { DateTimePickerWidget } from "../../DateTimePickerWidget";
 
 export class Calendar extends BaseComponent{
     private DateTimePicker: DateTimePickerComponent;
@@ -136,6 +137,10 @@ export class Calendar extends BaseComponent{
         this.ConfirmButton.addEventListener("click", () => {
             this.OnConfirmButtonClicked();
         });
+
+        this.NextButton.addEventListener("click", () => {
+            this.OnNextButtonClicked();
+        });
         
         return this;
     }
@@ -173,15 +178,19 @@ export class Calendar extends BaseComponent{
     }
 
     private OnConfirmButtonClicked(): void{
-        const beforeConfirmEvent: BeforeDateTimeConfirmedEvent = new BeforeDateTimeConfirmedEvent();
+        const beforeConfirmEvent: BeforeConfirmedEvent = new BeforeConfirmedEvent();
         beforeConfirmEvent.DateTime = this.CurrentDateTime;
 
-        this.DateTimePicker.FireBeforeDateTimeConfirmed(beforeConfirmEvent);
+        this.DateTimePicker.FireBeforeConfirmed(beforeConfirmEvent);
 
         if (!beforeConfirmEvent.Canceled){
-            this.DateTimePicker.SetCurrentDate(this.CurrentDateTime.month, this.CurrentDateTime.day, this.CurrentDateTime.year);
-            this.DateTimePicker.HideAll();
+            this.DateTimePicker.ConfirmSelection();
         }
+    }
+
+    private OnNextButtonClicked(): void{
+        this.Hide();
+        this.DateTimePicker.Show(DateTimePickerWidget.TIME_PICKER);
     }
 
     /**
@@ -224,11 +233,11 @@ export class Calendar extends BaseComponent{
         this.BackButton.style.display = "none";
 
         if (this.DateTimePicker.GetTimePickerEnabled()){
-            this.NextButton.style.display = "none";
-            this.ConfirmButton.style.display = null;
-        }else{
             this.NextButton.style.display = null;
             this.ConfirmButton.style.display = "none";
+        }else{
+            this.NextButton.style.display = "none";
+            this.ConfirmButton.style.display = null;
         }
 
         this.Dom.classList.add("show");
@@ -244,6 +253,10 @@ export class Calendar extends BaseComponent{
     public SetCurrentDateTime(dateTime: luxon.DateTime): this{
         this.CurrentDateTime = dateTime;
         return this;
+    }
+
+    public GetCurrentDateTime(): luxon.DateTime{
+        return this.CurrentDateTime;
     }
 
     /**
