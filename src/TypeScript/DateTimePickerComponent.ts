@@ -248,7 +248,7 @@ export class DateTimePickerComponent{
     public ConfirmSelection(): void{
         if (this.GetDatePickerEnabled()){
             const dateTimeFromCalendar = this.Calendar.GetCurrentDateTime();
-            this.SetCurrentDate(dateTimeFromCalendar.month, dateTimeFromCalendar.day, dateTimeFromCalendar.day);
+            this.SetCurrentDate(dateTimeFromCalendar.month, dateTimeFromCalendar.day, dateTimeFromCalendar.year);
         }
 
         if (this.GetTimePickerEnabled()){
