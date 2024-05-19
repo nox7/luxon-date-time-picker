@@ -167,11 +167,19 @@ export class TimePicker extends BaseComponent{
     }
 
     private OnHourWheel(e: WheelEvent): this{
+        if (e.deltaY === 0){
+            return;
+        }
+
         this.ShiftHour(e.deltaY > 0 ? 1 : -1);
         return this;
     }
 
     private OnMinuteWheel(e: WheelEvent): this{
+        if (e.deltaY === 0){
+            return;
+        }
+        
         this.ShiftMinute(e.deltaY > 0 ? 1 : -1);
         return this;
     }
