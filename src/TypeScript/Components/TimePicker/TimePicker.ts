@@ -21,6 +21,15 @@ export class TimePicker extends BaseComponent{
     private NextButton: HTMLButtonElement;
     private AMButton: HTMLButtonElement;
     private PMButton: HTMLButtonElement;
+    private LastTouchPageY: number;
+    /**
+     * Number of pixels a touch must move on an hour listening element before it will fire its internal "touch move" function
+     */
+    private LastTouchMoveThresholdHour: number = 20;
+    /**
+     * Number of pixels a touch must move on a minute listening element before it will fire its internal "touch move" function
+     */
+    private LastTouchMoveThresholdMinute: number = 10;
 
     public constructor(dateTimePickerComponent: DateTimePickerComponent){
         super();
@@ -155,6 +164,28 @@ export class TimePicker extends BaseComponent{
             this.ShiftMinute(1);
         });
 
+        template.addEventListener("touchstart", (e: TouchEvent) => {
+            this.LastTouchPageY = e.touches[0].pageY;
+        }, {passive: false});
+
+        template.querySelector(".minute-section").addEventListener("touchmove", (e: TouchEvent) => {
+            e.preventDefault();
+            const deltaY = this.LastTouchPageY - e.touches[0].pageY;
+            if (Math.abs(deltaY) >= this.LastTouchMoveThresholdMinute){
+                this.ShiftMinute(deltaY > 0 ? 1 : -1);
+                this.LastTouchPageY = e.touches[0].pageY;
+            }
+        }, {passive: false});
+
+        template.querySelector(".hour-section").addEventListener("touchmove", (e: TouchEvent) => {
+            e.preventDefault();
+            const deltaY = this.LastTouchPageY - e.touches[0].pageY;
+            if (Math.abs(deltaY) >= this.LastTouchMoveThresholdHour){
+                this.ShiftHour(deltaY > 0 ? 1 : -1);
+                this.LastTouchPageY = e.touches[0].pageY;
+            }
+        }, {passive: false});
+
         template.querySelector(".minute-section").addEventListener("wheel", (e: WheelEvent) => {
             this.OnMinuteWheel(e);
         });
@@ -179,7 +210,7 @@ export class TimePicker extends BaseComponent{
         if (e.deltaY === 0){
             return;
         }
-        
+
         this.ShiftMinute(e.deltaY > 0 ? 1 : -1);
         return this;
     }
@@ -196,7 +227,6 @@ export class TimePicker extends BaseComponent{
             newMinute += 60;
         }
 
-        console.log(newMinute);
         this.CurrentDateTime = this.CurrentDateTime.set({minute: newMinute});
         this.Reload();
         return this;
