@@ -124,8 +124,13 @@ export class DateTimePickerComponent{
      */
     public HideAll(): void{
         this.Backdrop.Hide();
-        this.Calendar.Hide();
-        this.TimePicker.Hide();
+        if (this.Calendar !== undefined){
+            this.Calendar.Hide();
+        }
+
+        if (this.TimePicker !== undefined){
+            this.TimePicker.Hide();
+        }
     }
 
     /**

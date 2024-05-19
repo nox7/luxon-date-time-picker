@@ -138,6 +138,10 @@ export class TimePicker extends BaseComponent{
         this.AMButton = template.querySelector(".am-button");
         this.PMButton = template.querySelector(".pm-button");
 
+        this.CancelButton.addEventListener("click", () => {
+            this.OnCancelButtonClicked();
+        });
+
         this.BackButton.addEventListener("click", () => {
             this.OnBackButtonClicked();
         });
@@ -274,6 +278,10 @@ export class TimePicker extends BaseComponent{
 
         this.Reload();
         return this;
+    }
+
+    private OnCancelButtonClicked(): void{
+        this.DateTimePicker.HideAll();
     }
 
     private OnBackButtonClicked(): this{
